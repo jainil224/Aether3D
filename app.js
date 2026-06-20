@@ -270,12 +270,12 @@
       }
     },
     onLeave: () => {
-      // Reset blur and overlay when leaving the section downward
-      if (videoEl) videoEl.style.filter = 'blur(0px)';
-      if (blurOverlay) blurOverlay.style.background = 'rgba(2, 4, 10, 0)';
+      // Keep blur at max as we scroll into the card section below
+      if (videoEl) videoEl.style.filter = 'blur(40px)';
+      if (blurOverlay) blurOverlay.style.background = 'rgba(2, 4, 10, 0.78)';
     },
     onLeaveBack: () => {
-      // Reset blur and overlay when scrolling back past the top
+      // Reset blur and overlay only when scrolling back up to the hero
       if (videoEl) videoEl.style.filter = 'blur(0px)';
       if (blurOverlay) blurOverlay.style.background = 'rgba(2, 4, 10, 0)';
     }
@@ -407,6 +407,33 @@
     start: 'top 80%',
     end: 'bottom top',
     toggleClass: { targets: '#card-stack-sticky', className: 'active' }
+  });
+
+  // ---- Keep background blurred throughout the card section ----
+  ScrollTrigger.create({
+    trigger: '#card-stack-section',
+    start: 'top bottom',   // as soon as card section enters viewport
+    end: 'bottom top',
+    onEnter: () => {
+      // Lock blur + dark overlay for the entire card section
+      if (videoEl) videoEl.style.filter = 'blur(40px)';
+      if (blurOverlay) blurOverlay.style.background = 'rgba(2, 4, 10, 0.78)';
+    },
+    onEnterBack: () => {
+      // Re-apply when scrolling back down into card section from below
+      if (videoEl) videoEl.style.filter = 'blur(40px)';
+      if (blurOverlay) blurOverlay.style.background = 'rgba(2, 4, 10, 0.78)';
+    },
+    onLeave: () => {
+      // Clear blur when leaving the card section downward (nothing below)
+      if (videoEl) videoEl.style.filter = 'blur(0px)';
+      if (blurOverlay) blurOverlay.style.background = 'rgba(2, 4, 10, 0)';
+    },
+    onLeaveBack: () => {
+      // Clear blur when scrolling back up past the card section (text section will re-drive it)
+      if (videoEl) videoEl.style.filter = 'blur(0px)';
+      if (blurOverlay) blurOverlay.style.background = 'rgba(2, 4, 10, 0)';
+    }
   });
 
 
