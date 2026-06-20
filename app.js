@@ -210,15 +210,15 @@
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: para,
-          start: 'top 95%',  // starts when top of paragraph enters bottom of screen (95%)
-          end: 'top 15%',    // ends when top of paragraph leaves top of screen (15%)
+          start: 'top 85%',  // starts when top of paragraph enters bottom of screen (85%)
+          end: 'top 28%',    // ends when top of paragraph leaves top of screen (28% - well below nav bar)
           scrub: true
         }
       });
 
-      tl.to(para, { opacity: 1, y: 0, duration: 0.4, ease: 'power1.out' })
-        .to(para, { opacity: 1, y: 0, duration: 0.2 })
-        .to(para, { opacity: 0.15, y: -20, duration: 0.4, ease: 'power1.in' });
+      tl.to(para, { opacity: 1, y: 0, duration: 0.35, ease: 'power1.out' })
+        .to(para, { opacity: 1, y: 0, duration: 0.3 })
+        .to(para, { opacity: 0.1, y: -12, duration: 0.35, ease: 'power1.in' });
     });
 
     // Show text container immediately on mobile (no fixed positioning complexity)
