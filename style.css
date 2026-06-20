@@ -1167,7 +1167,7 @@ nav .social svg {
   /* ---- Base: smooth native momentum scroll ---- */
   html {
     scroll-behavior: auto; /* let GSAP own scroll — CSS smooth conflicts with ScrollTrigger */
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: auto;
     -webkit-text-size-adjust: 100%;
   }
 
@@ -1175,8 +1175,7 @@ nav .social svg {
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: none;
-    touch-action: pan-y;
+    overscroll-behavior-y: auto;
   }
 
   /* ---- Mobile background: animated gradient (video disabled on mobile) ---- */
@@ -1203,7 +1202,7 @@ nav .social svg {
 
   /* ---- Text effect section: normal-flow on mobile (not height:280vh fixed animation) ---- */
   #text-effect-section {
-    height: auto;
+    height: auto !important;
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -1306,7 +1305,7 @@ nav .social svg {
 
   /* ---- Text Effect Section ---- */
   #text-effect-section {
-    height: 280vh;
+    height: auto !important;
   }
 
   #effect-text-container {
@@ -1328,7 +1327,7 @@ nav .social svg {
 
   /* ---- Card Stack / Carousel Section ---- */
   #card-stack-section {
-    height: 90vh;
+    height: 90vh !important;
   }
 
   #card-stack-sticky {

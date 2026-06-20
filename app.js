@@ -148,7 +148,7 @@
 
   // On mobile: let GSAP own the scroll container for smooth scrub animations
   if (isMobile) {
-    ScrollTrigger.normalizeScroll(true);
+    // ScrollTrigger.normalizeScroll(true); // Disable to allow smooth, native mobile momentum scrolling
     ScrollTrigger.config({ ignoreMobileResize: true });
   }
 
