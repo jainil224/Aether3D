@@ -445,7 +445,22 @@
     hero.style.opacity = fade;
     hero.style.transform = `translateY(${window.scrollY * 0.15}px)`;
   }
-  window.addEventListener('scroll', updateHeroOpacity, { passive: true });
+
+  // ===================== SCROLL PROGRESS BAR =====================
+  function updateScrollBar() {
+    const bar = document.getElementById('scroll-indicator-bar');
+    if (!bar) return;
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    bar.style.width = pct + '%';
+  }
+
+  window.addEventListener('scroll', () => {
+    updateHeroOpacity();
+    updateScrollBar();
+  }, { passive: true });
+
 
   // ===================== COPIER FUNCTIONALITY =====================
   function setupCopyButtons() {
@@ -664,9 +679,32 @@
       }
     });
 
-    // 6. Pause autoplay on hover
+    // 6. Touch swipe support for mobile
+    let touchStartX = 0;
+    let touchStartY = 0;
+    carousel.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    carousel.addEventListener('touchend', (e) => {
+      const deltaX = e.changedTouches[0].clientX - touchStartX;
+      const deltaY = e.changedTouches[0].clientY - touchStartY;
+      // Only register as a horizontal swipe if X movement is dominant
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40) {
+        if (deltaX < 0) {
+          selectSlide(currentIndex + 1); // swipe left → next
+        } else {
+          selectSlide(currentIndex - 1); // swipe right → prev
+        }
+        resetAutoplay();
+      }
+    }, { passive: true });
+
+    // 7. Pause autoplay on hover
     carousel.addEventListener('mouseenter', stopAutoplay);
     carousel.addEventListener('mouseleave', startAutoplay);
+
 
     // Initialize layout (do not start autoplay immediately, ScrollTrigger will control it)
     updateCarousel();

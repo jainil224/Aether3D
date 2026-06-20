@@ -1142,4 +1142,182 @@ nav .social svg {
 }
 
 
+/* =====================================================
+   MOBILE RESPONSIVE — ALL FIXES (max-width: 768px)
+   Desktop styles are completely untouched above.
+===================================================== */
+@media (max-width: 768px) {
 
+  /* ---- Base ---- */
+  html, body {
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ---- Capsule Nav ---- */
+  .capsule-nav {
+    top: 1rem;
+    gap: 0.75rem;
+    padding: 0.35rem 0.5rem 0.35rem 1rem;
+    max-width: calc(100vw - 2rem);
+  }
+
+  .capsule-links {
+    display: none;
+  }
+
+  .capsule-btn-connect {
+    font-size: 0.75rem;
+    padding: 0.45rem 1rem;
+    white-space: nowrap;
+  }
+
+  /* ---- Scroll Progress Bar ---- */
+  #scroll-indicator-bar {
+    height: 2px;
+  }
+
+  /* ---- Loading Overlay ---- */
+  .loading-text {
+    font-size: 1.1rem;
+  }
+
+  /* ---- Hero Section ---- */
+  #hero {
+    height: 100svh;
+  }
+
+  .hero-right-corner {
+    position: absolute;
+    top: auto;
+    bottom: 12vh;
+    right: 5vw;
+    font-size: clamp(1.6rem, 7vw, 2.5rem);
+    line-height: 0.9;
+    z-index: 12;
+    text-align: right;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ---- ScrollFloat Hero Text ---- */
+  .scroll-float-container {
+    padding: 0.75rem;
+    justify-content: flex-end;
+    padding-bottom: 22vh;
+  }
+
+  .scroll-float-text {
+    font-size: clamp(2.8rem, 18vw, 5.5rem);
+    line-height: 0.88;
+  }
+
+  /* ---- Scroll Video ---- */
+  #scroll-video-container,
+  .video-wrapper {
+    height: 100svh;
+  }
+
+  /* ---- Ambient Particles ---- */
+  #particles-canvas {
+    opacity: 0.35;
+  }
+
+  /* ---- Text Effect Section ---- */
+  #text-effect-section {
+    height: 280vh;
+  }
+
+  #effect-text-container {
+    padding: 0 1.25rem;
+    gap: 1rem;
+    max-width: 100%;
+  }
+
+  .text-reveal-effect {
+    font-size: clamp(1.05rem, 4.5vw, 1.4rem);
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
+
+  /* ---- Transition Section ---- */
+  #transition-section {
+    height: 40vh;
+  }
+
+  /* ---- Card Stack / Carousel Section ---- */
+  #card-stack-section {
+    height: 90vh;
+  }
+
+  #card-stack-sticky {
+    padding: 0 0.5rem;
+  }
+
+  .perspective-carousel {
+    touch-action: pan-y;
+  }
+
+  .carousel-viewport {
+    perspective: 700px;
+  }
+
+  .carousel-slide-label {
+    font-size: 0.78rem;
+  }
+
+  .carousel-controls {
+    bottom: 1rem;
+    padding: 0.3rem 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .carousel-controls .control-btn {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .carousel-dots .dot-btn {
+    height: 0.4rem;
+    width: 0.4rem;
+  }
+
+  .carousel-dots .dot-btn.active {
+    width: 1.25rem;
+  }
+
+  /* ---- Prevent any horizontal overflow ---- */
+  #content,
+  #text-effect-section,
+  #card-stack-section,
+  #transition-section {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+}
+
+/* ---- Extra small phones (iPhone SE, Galaxy A, etc.) ---- */
+@media (max-width: 480px) {
+
+  .scroll-float-text {
+    font-size: clamp(2.4rem, 20vw, 4rem);
+  }
+
+  .hero-right-corner {
+    font-size: clamp(1.4rem, 8vw, 2rem);
+    bottom: 10vh;
+  }
+
+  .capsule-btn-connect {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.85rem;
+  }
+
+  .text-reveal-effect {
+    font-size: clamp(0.95rem, 4vw, 1.2rem);
+  }
+
+  #card-stack-section {
+    height: 80vh;
+  }
+}
