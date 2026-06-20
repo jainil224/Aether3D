@@ -1390,9 +1390,13 @@ nav .social svg {
     height: 100dvh;
   }
 
-  /* ---- Blur overlay instant on mobile (no CSS transition lag) ---- */
+  /* ---- Blur overlay and video filter transition on mobile ---- */
   #blur-overlay {
-    transition: none;
+    transition: background 0.6s ease;
+  }
+
+  #scroll-video-container video {
+    transition: filter 0.6s ease;
   }
 
   /* ---- Card section: add momentum scrolling hint ---- */

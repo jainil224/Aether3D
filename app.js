@@ -45,10 +45,23 @@
     }
   }
 
-  // On mobile: skip video entirely — show instantly, use CSS background
+  // On mobile: load MP4 fallback, set to autoplay + loop + playsinline
   if (isMobile) {
     if (videoEl) {
-      videoEl.style.display = 'none'; // don't render the video element at all
+      videoEl.style.display = 'block'; // ensure visible
+      videoEl.autoplay = true;
+      videoEl.loop = true;
+      videoEl.muted = true;
+      videoEl.playsInline = true;
+      videoEl.setAttribute('playsinline', '');
+      videoEl.setAttribute('autoplay', '');
+      videoEl.setAttribute('loop', '');
+      videoEl.setAttribute('muted', '');
+      videoEl.src = 'https://res.cloudinary.com/dsn0ks2hl/video/upload/upscaled-video_3_dcpffg.mp4';
+      videoEl.load();
+      videoEl.play().catch(err => {
+        console.log("Mobile video autoplay blocked/failed:", err);
+      });
     }
     // Show page immediately without waiting for video buffer
     setTimeout(hideOverlay, 800);
@@ -217,8 +230,10 @@
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             blurOverlay.style.background = 'rgba(2, 4, 10, 0.88)';
+            if (videoEl) videoEl.style.filter = 'blur(40px)';
           } else {
             blurOverlay.style.background = 'rgba(2, 4, 10, 0)';
+            if (videoEl) videoEl.style.filter = 'blur(0px)';
           }
         });
       }, { threshold: 0.1 });
