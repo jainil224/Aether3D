@@ -1200,29 +1200,30 @@ nav .social svg {
     100% { opacity: 1; }
   }
 
-  /* ---- Text effect section: normal-flow on mobile (not height:280vh fixed animation) ---- */
+  /* ---- Text effect section: sticky flow on mobile (looking like desktop) ---- */
   #text-effect-section {
-    height: auto !important;
+    height: 180vh !important;
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 5rem 0;
+    display: block;
     position: relative;
   }
 
-  /* Text effect container: normal document flow on mobile */
+  /* Text effect container: sticky document flow on mobile */
   #effect-text-container {
-    position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    transform: none !important;
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: 0 !important;
+    height: 100dvh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 1.25rem !important;
+    padding: 0 1.5rem !important;
     width: 100% !important;
     max-width: 100% !important;
-    padding: 1.5rem !important;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
+    text-align: center !important;
+    box-sizing: border-box !important;
     opacity: 1 !important;
     visibility: visible !important;
   }
@@ -1305,7 +1306,7 @@ nav .social svg {
 
   /* ---- Text Effect Section ---- */
   #text-effect-section {
-    height: auto !important;
+    height: 180vh !important;
   }
 
   #effect-text-container {

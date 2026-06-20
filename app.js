@@ -192,7 +192,7 @@
 
   if (isMobile) {
     // ── MOBILE: Lightweight scroll-scrubbed paragraph animation ──
-    // Opacity/transform links to scroll progress for smooth scrolling in BOTH directions (down/up)
+    // Opacity/transform links to scroll progress of the parent section for smooth scrolling in BOTH directions (down/up)
     effectParagraphs.forEach((para) => {
       const text = para.textContent.trim();
       para.textContent = text;
@@ -200,33 +200,55 @@
       para.style.opacity = '0.15';
       para.style.transform = 'translateY(20px)';
       para.style.willChange = 'opacity, transform';
-
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: para,
-          start: 'top 85%',  // starts when top of paragraph enters bottom of screen (85%)
-          end: 'top 28%',    // ends when top of paragraph leaves top of screen (28% - well below nav bar)
-          scrub: true
-        }
-      });
-
-      tl.to(para, { opacity: 1, y: 0, duration: 0.35, ease: 'power1.out' })
-        .to(para, { opacity: 1, y: 0, duration: 0.3 })
-        .to(para, { opacity: 0.1, y: -12, duration: 0.35, ease: 'power1.in' });
     });
 
-    // Show text container immediately on mobile (no fixed positioning complexity)
+    ScrollTrigger.create({
+      trigger: '#text-effect-section',
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: true,
+      onUpdate: (self) => {
+        const progress = self.progress;
+        const totalParas = effectParagraphs.length;
+        
+        effectParagraphs.forEach((para, paraIdx) => {
+          // Spread peaks out between progress 0.15 and 0.85
+          const peak = 0.15 + (paraIdx / (totalParas - 1)) * 0.7;
+          const dist = Math.abs(progress - peak);
+          
+          let opacity = 0.15;
+          let translateY = 20;
+          
+          if (dist < 0.12) {
+            const factor = 1 - (dist / 0.12); // 0 to 1
+            opacity = 0.15 + factor * 0.85;
+            translateY = 20 - factor * 20; // 20px to 0px
+          } else if (progress > peak) {
+            // Fading out toward top
+            const fadeOutDist = dist - 0.12;
+            if (fadeOutDist < 0.12) {
+              const factor = 1 - (fadeOutDist / 0.12); // 1 to 0
+              opacity = 0.15 + factor * 0.85;
+              translateY = - (1 - factor) * 20; // 0px to -20px
+            } else {
+              opacity = 0.15;
+              translateY = -20;
+            }
+          } else {
+            opacity = 0.15;
+            translateY = 20;
+          }
+          
+          para.style.opacity = opacity;
+          para.style.transform = `translateY(${translateY}px)`;
+        });
+      }
+    });
+
+    // Show text container immediately on mobile
     if (effectTextContainer) {
       effectTextContainer.style.opacity = '1';
       effectTextContainer.style.visibility = 'visible';
-      effectTextContainer.style.position = 'relative';
-      effectTextContainer.style.top = 'auto';
-      effectTextContainer.style.left = 'auto';
-      effectTextContainer.style.transform = 'none';
-      effectTextContainer.style.width = '100%';
-      effectTextContainer.style.maxWidth = '100%';
-      effectTextContainer.style.padding = '1.5rem';
-      effectTextContainer.style.zIndex = '10';
     }
 
     // Dark overlay for text section on mobile — use IntersectionObserver (no scroll event)
