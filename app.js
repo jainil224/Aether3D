@@ -209,8 +209,17 @@
       scrub: true,
       onUpdate: (self) => {
         const progress = self.progress;
-        const totalParas = effectParagraphs.length;
+
+        // Dynamically drive background blur & dark overlay on mobile based on scroll progress
+        const blurVal = Math.min(40, progress * 80);
+        if (videoEl) videoEl.style.filter = `blur(${blurVal}px)`;
         
+        const overlayOpacity = Math.min(0.78, progress * 1.56);
+        if (blurOverlay) {
+          blurOverlay.style.background = `rgba(2, 4, 10, ${overlayOpacity})`;
+        }
+
+        const totalParas = effectParagraphs.length;
         effectParagraphs.forEach((para, paraIdx) => {
           // Spread peaks out between progress 0.15 and 0.85
           const peak = 0.15 + (paraIdx / (totalParas - 1)) * 0.7;
@@ -249,23 +258,6 @@
     if (effectTextContainer) {
       effectTextContainer.style.opacity = '1';
       effectTextContainer.style.visibility = 'visible';
-    }
-
-    // Dark overlay for text section on mobile — use IntersectionObserver (no scroll event)
-    const textSection = document.getElementById('text-effect-section');
-    if (textSection && blurOverlay) {
-      const overlayObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            blurOverlay.style.background = 'rgba(2, 4, 10, 0.88)';
-            if (videoEl) videoEl.style.filter = 'blur(40px)';
-          } else {
-            blurOverlay.style.background = 'rgba(2, 4, 10, 0)';
-            if (videoEl) videoEl.style.filter = 'blur(0px)';
-          }
-        });
-      }, { threshold: 0.1 });
-      overlayObserver.observe(textSection);
     }
 
   } else {
@@ -866,44 +858,34 @@
 
   // ===================== MOBILE NAV MENU =====================
   function setupMobileNav() {
-    const toggle = document.querySelector('.mobile-toggle');
-    const navLinks = document.querySelector('nav .nav-links');
-    if (!toggle || !navLinks) return;
+    const burger = document.querySelector('.capsule-burger');
+    const nav = document.querySelector('.capsule-nav');
+    if (!burger || !nav) return;
 
-    toggle.addEventListener('click', () => {
-      const isOpen = navLinks.style.display === 'flex';
-      if (isOpen) {
-        navLinks.style.display = 'none';
-      } else {
-        navLinks.style.display = 'flex';
-        navLinks.style.flexDirection = 'column';
-        navLinks.style.position = 'absolute';
-        navLinks.style.top = '100%';
-        navLinks.style.left = '0';
-        navLinks.style.right = '0';
-        navLinks.style.background = 'rgba(8, 8, 12, 0.95)';
-        navLinks.style.borderRadius = '20px';
-        navLinks.style.padding = '1.5rem';
-        navLinks.style.marginTop = '0.5rem';
-        navLinks.style.border = '1px solid var(--border-glass)';
-        navLinks.style.backdropFilter = 'blur(20px)';
+    burger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      nav.classList.toggle('mobile-open');
+    });
+
+    // Close menu when clicking a link
+    const links = nav.querySelectorAll('.capsule-links a');
+    links.forEach(link => {
+      link.addEventListener('click', () => {
+        nav.classList.remove('mobile-open');
+      });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!nav.contains(e.target)) {
+        nav.classList.remove('mobile-open');
       }
     });
 
+    // Close menu on screen resize to desktop
     window.addEventListener('resize', () => {
       if (window.innerWidth > 768) {
-        navLinks.style.display = '';
-        navLinks.style.flexDirection = '';
-        navLinks.style.position = '';
-        navLinks.style.top = '';
-        navLinks.style.left = '';
-        navLinks.style.right = '';
-        navLinks.style.background = '';
-        navLinks.style.borderRadius = '';
-        navLinks.style.padding = '';
-        navLinks.style.marginTop = '';
-        navLinks.style.border = '';
-        navLinks.style.backdropFilter = '';
+        nav.classList.remove('mobile-open');
       }
     });
   }

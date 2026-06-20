@@ -1403,6 +1403,123 @@ nav .social svg {
   #card-stack-sticky {
     -webkit-overflow-scrolling: touch;
   }
+
+  /* ---- Hamburger Menu Styles ---- */
+  .capsule-burger {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 20px;
+    height: 14px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 110;
+    order: 3;
+  }
+
+  .capsule-burger .burger-line {
+    width: 100%;
+    height: 2px;
+    background-color: var(--text-primary);
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
+    border-radius: 2px;
+  }
+
+  .capsule-nav.mobile-open .capsule-burger .burger-line:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  .capsule-nav.mobile-open .capsule-burger .burger-line:nth-child(2) {
+    opacity: 0;
+  }
+
+  .capsule-nav.mobile-open .capsule-burger .burger-line:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  /* Mobile Capsule Nav Structure & Animation */
+  .capsule-nav {
+    width: calc(100% - 2rem);
+    max-width: 480px;
+    padding: 0.5rem 1rem;
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-sizing: border-box;
+    max-height: 52px; 
+    overflow: hidden;
+  }
+
+  .capsule-nav.mobile-open {
+    max-height: 400px;
+    border-radius: 24px;
+    padding: 1.25rem 1.5rem;
+    background: rgba(8, 8, 12, 0.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  }
+
+  .capsule-logo {
+    order: 1;
+  }
+
+  .capsule-btn-connect {
+    order: 2;
+    margin-left: auto;
+    margin-right: 0.85rem;
+  }
+
+  .capsule-links {
+    display: none !important;
+  }
+
+  .capsule-nav.mobile-open .capsule-links {
+    display: flex !important;
+    flex-direction: column;
+    width: 100%;
+    order: 4;
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border-glass);
+    align-items: center;
+    animation: fadeInMenu 0.3s ease forwards;
+  }
+
+  .capsule-nav.mobile-open .capsule-links a {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    width: 100%;
+    text-align: center;
+    padding: 0.25rem 0;
+    transition: color 0.2s ease;
+  }
+
+  .capsule-nav.mobile-open .capsule-links a:hover {
+    color: #ffffff;
+  }
+
+  /* Fix text reveal section positioning cutoff */
+  #effect-text-container {
+    left: 0 !important;
+    transform: none !important;
+  }
+
+  @keyframes fadeInMenu {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 /* ---- Extra small phones (iPhone SE, Galaxy A, etc.) ---- */
