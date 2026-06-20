@@ -194,20 +194,36 @@
   const cardStackSticky = document.getElementById('card-stack-sticky');
 
   // ScrollTrigger to blur the background video and reveal paragraph characters in staggered fashion
+  const blurOverlay = document.getElementById('blur-overlay');
+
   ScrollTrigger.create({
     trigger: '#text-effect-section',
     start: 'top top',
     end: 'bottom top',
     scrub: true,
     onUpdate: (self) => {
-      // 1. Animate video blur dynamically based on scroll progress
-      const maxBlur = 15; // maximum blur in px
-      const blurValue = self.progress * maxBlur;
+      // 1. Animate video blur — ramps up fast with power-2 easing, max 40px
+      const maxBlur = 40;
+      const easedProgress = Math.pow(self.progress, 0.4); // fast ramp: 0.4 exponent = blurs quickly early on
+      const blurValue = easedProgress * maxBlur;
       if (videoEl) {
         videoEl.style.filter = `blur(${blurValue}px)`;
       }
 
-      // 2. Character-by-character staggered reveal for each paragraph in order
+      // 2. Dark overlay — fades in to 0.82 opacity so video is fully obscured
+      //    Fades out again at the end (progress > 0.88)
+      if (blurOverlay) {
+        let overlayAlpha = 0;
+        if (self.progress <= 0.88) {
+          overlayAlpha = Math.min(0.82, easedProgress * 0.95);
+        } else {
+          // fade overlay out as text section ends
+          overlayAlpha = 0.82 * ((1 - self.progress) / 0.12);
+        }
+        blurOverlay.style.background = `rgba(2, 4, 10, ${overlayAlpha})`;
+      }
+
+      // 3. Character-by-character staggered reveal for each paragraph in order
       const totalParas = effectParagraphs.length;
       effectParagraphs.forEach((para, paraIdx) => {
         // Distribute paragraph reveal times evenly across progress 0.1 to 0.95
@@ -242,7 +258,7 @@
         });
       });
 
-      // 3. Smoothly fade the text container in at the start and out at the end
+      // 4. Smoothly fade the text container in at the start and out at the end
       if (effectTextContainer) {
         let opacity = 1;
         if (self.progress < 0.1) {
@@ -252,6 +268,16 @@
         }
         effectTextContainer.style.opacity = opacity;
       }
+    },
+    onLeave: () => {
+      // Reset blur and overlay when leaving the section downward
+      if (videoEl) videoEl.style.filter = 'blur(0px)';
+      if (blurOverlay) blurOverlay.style.background = 'rgba(2, 4, 10, 0)';
+    },
+    onLeaveBack: () => {
+      // Reset blur and overlay when scrolling back past the top
+      if (videoEl) videoEl.style.filter = 'blur(0px)';
+      if (blurOverlay) blurOverlay.style.background = 'rgba(2, 4, 10, 0)';
     }
   });
 

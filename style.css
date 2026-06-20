@@ -164,6 +164,17 @@ body {
   display: none;
 }
 
+/* Dark frost overlay — controlled by JS during text reveal section */
+#blur-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: rgba(2, 4, 10, 0);   /* starts fully transparent */
+  pointer-events: none;
+  transition: background 0.1s linear;
+  will-change: background;
+}
+
 /* Particles */
 #particles-canvas {
   position: fixed;
@@ -671,7 +682,7 @@ nav .social svg {
   font-family: var(--font-heading);
   font-size: clamp(1.25rem, 3.5vw, 2rem);
   font-weight: 700;
-  color: #0A0A0A;
+  color: #ffffff;
   letter-spacing: -0.02em;
   line-height: 1.3;
   margin: 0;
@@ -684,15 +695,15 @@ nav .social svg {
   transform: translateY(12px);
   transition: opacity 0.35s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1), filter 0.35s;
   will-change: opacity, transform, filter;
-  color: #0A0A0A;
+  color: #ffffff;
 }
 
 .text-reveal-effect span.char-span.revealed {
   opacity: 1;
   filter: blur(0px);
   transform: translateY(0);
-  color: #0A0A0A;
-  text-shadow: none;
+  color: #ffffff;
+  text-shadow: 0 0 30px rgba(0, 240, 255, 0.15);
 }
 
 /* ===================== TRANSITION SECTION ===================== */
