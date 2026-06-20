@@ -119,6 +119,18 @@
   // ===================== GSAP SCROLLTRIGGER =====================
   gsap.registerPlugin(ScrollTrigger);
 
+  // Detect mobile once — used throughout to adapt behaviour
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth <= 768;
+
+  // On mobile: normalizeScroll makes GSAP own the scroll so touch animations
+  // are perfectly smooth and don't stutter against the browser's inertia scroll.
+  // ignoreMobileResize prevents ScrollTrigger from recalculating on every
+  // address-bar hide/show (which causes jumpy scroll positions on iOS).
+  if (isMobile) {
+    ScrollTrigger.normalizeScroll(true);
+    ScrollTrigger.config({ ignoreMobileResize: true });
+  }
+
   // Scroll-to-seek video logic (scrubs video from top of page to bottom)
   let currentTarget = 0;
   let seekPending = false;
@@ -450,7 +462,9 @@
 
   function createParticles() {
     particles = [];
-    const count = Math.floor((pCanvas.width * pCanvas.height) / 20000);
+    // Reduce particle count on mobile to keep scroll smooth
+    const density = isMobile ? 60000 : 20000;
+    const count = Math.floor((pCanvas.width * pCanvas.height) / density);
     for (let i = 0; i < count; i++) {
       particles.push({
         x: Math.random() * pCanvas.width,
@@ -466,11 +480,12 @@
 
   function animateParticles() {
     pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
-    const dxMouse = (mouseX - window.innerWidth / 2) * 0.02;
-    const dyMouse = (mouseY - window.innerHeight / 2) * 0.02;
+    // On mobile: skip mouse tracking (no mouse) and reduce sine wave cost
+    const dxMouse = isMobile ? 0 : (mouseX - window.innerWidth / 2) * 0.02;
+    const dyMouse = isMobile ? 0 : (mouseY - window.innerHeight / 2) * 0.02;
 
     for (const p of particles) {
-      p.x += p.vx + Math.sin(Date.now() * 0.001 + p.seed) * 0.04 + (dxMouse * p.size * 0.08);
+      p.x += p.vx + (isMobile ? 0 : Math.sin(Date.now() * 0.001 + p.seed) * 0.04) + (dxMouse * p.size * 0.08);
       p.y += p.vy + (dyMouse * p.size * 0.08);
 
       if (p.x < 0) p.x = pCanvas.width;
@@ -496,7 +511,10 @@
     if (!hero) return;
     const fade = Math.max(0, 1 - window.scrollY / (window.innerHeight * 0.45));
     hero.style.opacity = fade;
-    hero.style.transform = `translateY(${window.scrollY * 0.15}px)`;
+    // Skip parallax transform on mobile — reduces repaints and scroll jank
+    if (!isMobile) {
+      hero.style.transform = `translateY(${window.scrollY * 0.15}px)`;
+    }
   }
 
   // ===================== SCROLL PROGRESS BAR =====================
