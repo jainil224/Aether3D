@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aether3D — Craft Immersive 3D Worlds on the Web</title>
+  <meta name="description" content="Aether3D merges the elegance of Svelte 5 with the performance of Three.js. Build responsive, declarative 3D apps and games for the web." />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.0/dist/hls.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="ScrollFloat.css" />
+</head>
+<body>
+
+  <!-- Top Scroll Progress -->
+  <div id="scroll-indicator-bar"></div>
+
+  <!-- Navigation Capsule (Top Center) -->
+  <nav class="capsule-nav">
+    <div class="capsule-logo" aria-label="Logo">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="#B71C1C" width="20" height="20" role="img" viewBox="0 0 24 24">
+        <title>AdAway</title>
+        <path d="M7.049 0 .014 7.016 0 16.951l7.016 7.035 9.935.014 7.035-7.015L24 7.049 16.984.014zm-1.87 6.52c.456-.046 2.886.98 5.768.99 1.48.091 2.039.52 2.455.956.932.878 1.135 1.324 2.315.755.48-.231 1.072-1.6 1.739-1.747.52-.076 1.283.58 1.474.77.21.205.399.396.598.487-.684.037-1.632 1.634-1.657 2.99.137 3.791-1.57 3.582-3.248 5.437-.535.51-.836 1.578-.836 2.553l-.705-.021c-.418.01-.895-.535-1.126-.899-.44-.735-.897.673-1.583-.48.031-.383-1.833-.457-.762-1.348 2.53-1.79 3.764-2.168 3.711-2.708-.062-.638-1.545-.06-2.884-.122-2.213-.102-1.97-1.504-2.166-2.157-1.857-1.034 1.428-1.52-.015-1.826-.705-.111-1.949.15-2.21-1.069.235.291 3.32-.304 2.077-.498-1.725-.783-2.21-.364-2.926-1.835-.124-.15-.124-.218-.019-.228Zm12.575 1.903a.261.261 0 0 0-.26.26.261.261 0 0 0 .26.262.261.261 0 0 0 .261-.261.261.261 0 0 0-.26-.261z" />
+      </svg>
+    </div>
+    <div class="capsule-links">
+      <a href="#module">Module</a>
+      <a href="#case-records">Case Records</a>
+      <a href="#biotech">Biotech</a>
+      <a href="#tiers">Tiers</a>
+      <a href="#live-demo">Live Demo</a>
+    </div>
+    <a href="#connect" class="capsule-btn-connect">Connect</a>
+  </nav>
+
+
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="loading-text">Loading... <span id="loading-progress">0</span>%</div>
+  </div>
+
+  <!-- Scroll Video Background -->
+  <div id="scroll-video-container">
+    <div id="video-wrapper" class="video-wrapper">
+      <video id="video-fallback" muted playsinline crossorigin="anonymous"></video>
+    </div>
+    <div class="overlay"></div>
+  </div>
+
+  <!-- Ambient Particles -->
+  <canvas id="particles-canvas"></canvas>
+
+  <!-- LAYER 2: HERO TEXT → ScrollFloat Component -->
+  <div class="scroll-float-container">
+    <div class="scroll-float-text" id="hero-scroll-float"></div>
+  </div>
+
+  <!-- Main Content -->
+  <div id="content">
+
+    <!-- Section 1: Hero -->
+    <section id="hero">
+      <div class="gradient-overlay"></div>
+      
+      <!-- Right corner text using Dirtyline font -->
+      <div class="hero-right-corner">
+        Synapse<br>Core
+      </div>
+
+      <div class="bounce-arrow">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- Scroll Video Blur & Text Effect Zone -->
+    <div id="text-effect-section" style="height: 250vh; position: relative;">
+      <div id="effect-text-container">
+        <p class="text-reveal-effect">Instantly craft immersive 3D worlds on the web.</p>
+        <p class="text-reveal-effect">Unleash your creativity with declarative layouts.</p>
+        <p class="text-reveal-effect">Engineered on top of Svelte 5 and Three.js.</p>
+        <p class="text-reveal-effect">Sub-millisecond frame rendering and high coherence.</p>
+        <p class="text-reveal-effect">Hardware-accelerated pipeline with direct metal execution.</p>
+        <p class="text-reveal-effect">Dynamic viewport scaling and sub-pixel antialiasing.</p>
+        <p class="text-reveal-effect">Start building the future of 3D web design today.</p>
+      </div>
+    </div>
+
+    <!-- Transition Zone: text → cards -->
+    <div id="transition-section"></div>
+
+    <!-- Perspective Carousel Section -->
+    <div id="card-stack-section" style="height: 100vh; position: relative;">
+      <div id="card-stack-sticky">
+        <div class="perspective-carousel" id="perspective-carousel" tabindex="0">
+          <div class="carousel-viewport" id="carousel-viewport">
+            <div class="carousel-track" id="carousel-track">
+              <!-- Slide 1 -->
+              <div class="carousel-slide" data-index="0">
+                <div class="carousel-slide-content">
+                  <button class="carousel-slide-button" aria-label="Show Luxury Performance">
+                    <img src="https://i.pinimg.com/736x/e7/cf/cb/e7cfcbd7a8af10b8839c8d9a3d8eb4ce.jpg" alt="Luxury Performance" class="carousel-slide-image" />
+                  </button>
+                  <p class="carousel-slide-label">Luxury Performance</p>
+                </div>
+              </div>
+              <!-- Slide 2 -->
+              <div class="carousel-slide" data-index="1">
+                <div class="carousel-slide-content">
+                  <button class="carousel-slide-button" aria-label="Show Elegant Design">
+                    <img src="https://i.pinimg.com/736x/f4/b0/00/f4b000a6880f7e8d0c677812d789e001.jpg" alt="Elegant Design" class="carousel-slide-image" />
+                  </button>
+                  <p class="carousel-slide-label">Elegant Design</p>
+                </div>
+              </div>
+              <!-- Slide 3 -->
+              <div class="carousel-slide" data-index="2">
+                <div class="carousel-slide-content">
+                  <button class="carousel-slide-button" aria-label="Show Power & Speed">
+                    <img src="https://i.pinimg.com/1200x/ae/cf/d7/aecfd72b2439914647ec06d19cb182b5.jpg" alt="Power & Speed" class="carousel-slide-image" />
+                  </button>
+                  <p class="carousel-slide-label">Power & Speed</p>
+                </div>
+              </div>
+              <!-- Slide 4 -->
+              <div class="carousel-slide" data-index="3">
+                <div class="carousel-slide-content">
+                  <button class="carousel-slide-button" aria-label="Show Timeless Craftsmanship">
+                    <img src="https://i.pinimg.com/736x/5d/f7/69/5df7696c4f24b7961c8c72748a355ff8.jpg" alt="Timeless Craftsmanship" class="carousel-slide-image" />
+                  </button>
+                  <p class="carousel-slide-label">Timeless Craftsmanship</p>
+                </div>
+              </div>
+              <!-- Slide 5 -->
+              <div class="carousel-slide" data-index="4">
+                <div class="carousel-slide-content">
+                  <button class="carousel-slide-button" aria-label="Show Future of Mobility">
+                    <img src="https://i.pinimg.com/736x/9c/f2/8b/9cf28b4df4e06e0ca34fbe87f25734b6.jpg" alt="Future of Mobility" class="carousel-slide-image" />
+                  </button>
+                  <p class="carousel-slide-label">Future of Mobility</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div class="carousel-controls" id="carousel-controls">
+            <button type="button" class="control-btn prev-btn" id="carousel-prev" aria-label="Show previous slide">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <div class="carousel-dots" id="carousel-dots">
+              <!-- Dots generated dynamically in JS -->
+            </div>
+            <button type="button" class="control-btn next-btn" id="carousel-next" aria-label="Show next slide">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
