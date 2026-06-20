@@ -45,22 +45,18 @@
     }
   }
 
-  // On mobile: load MP4 fallback, set to autoplay + loop + playsinline
+  // On mobile: load MP4 fallback, set to muted + playsinline (for scroll seeking)
   if (isMobile) {
     if (videoEl) {
       videoEl.style.display = 'block'; // ensure visible
-      videoEl.autoplay = true;
-      videoEl.loop = true;
       videoEl.muted = true;
       videoEl.playsInline = true;
       videoEl.setAttribute('playsinline', '');
-      videoEl.setAttribute('autoplay', '');
-      videoEl.setAttribute('loop', '');
       videoEl.setAttribute('muted', '');
       videoEl.src = 'https://res.cloudinary.com/dsn0ks2hl/video/upload/upscaled-video_3_dcpffg.mp4';
       videoEl.load();
-      videoEl.play().catch(err => {
-        console.log("Mobile video autoplay blocked/failed:", err);
+      videoEl.addEventListener('loadedmetadata', () => {
+        duration = videoEl.duration;
       });
     }
     // Show page immediately without waiting for video buffer
@@ -152,43 +148,41 @@
     ScrollTrigger.config({ ignoreMobileResize: true });
   }
 
-  // Scroll-to-seek video — DESKTOP ONLY (video seeking is extremely expensive on mobile)
-  if (!isMobile) {
-    let currentTarget = 0;
-    let seekPending = false;
+  // Scroll-to-seek video — both mobile and desktop (MP4 makes seeking extremely smooth on mobile)
+  let currentTarget = 0;
+  let seekPending = false;
 
-    function doSeek(time) {
-      currentTarget = time;
-      if (!videoEl.seeking) {
-        videoEl.currentTime = time;
-      } else {
-        seekPending = true;
+  function doSeek(time) {
+    currentTarget = time;
+    if (!videoEl.seeking) {
+      videoEl.currentTime = time;
+    } else {
+      seekPending = true;
+    }
+  }
+
+  videoEl.addEventListener('seeked', () => {
+    if (seekPending) {
+      seekPending = false;
+      doSeek(currentTarget);
+    }
+  });
+
+  ScrollTrigger.create({
+    trigger: document.documentElement,
+    start: 'top top',
+    end: 'bottom bottom',
+    scrub: true,
+    onUpdate: (self) => {
+      if (videoEl.duration && isFinite(videoEl.duration)) {
+        duration = videoEl.duration;
+        const maxSeek = Math.min(3.0, duration - 0.1);
+        const progressScale = Math.min(1, self.progress / 0.3);
+        const clampedTime = progressScale * maxSeek;
+        doSeek(Math.max(0, clampedTime));
       }
     }
-
-    videoEl.addEventListener('seeked', () => {
-      if (seekPending) {
-        seekPending = false;
-        doSeek(currentTarget);
-      }
-    });
-
-    ScrollTrigger.create({
-      trigger: document.documentElement,
-      start: 'top top',
-      end: 'bottom bottom',
-      scrub: true,
-      onUpdate: (self) => {
-        if (videoEl.duration && isFinite(videoEl.duration)) {
-          duration = videoEl.duration;
-          const maxSeek = Math.min(3.0, duration - 0.1);
-          const progressScale = Math.min(1, self.progress / 0.3);
-          const clampedTime = progressScale * maxSeek;
-          doSeek(Math.max(0, clampedTime));
-        }
-      }
-    });
-  }
+  });
 
   // ── Text effect: mobile vs desktop paths ──
   const effectParagraphs = document.querySelectorAll('.text-reveal-effect');
