@@ -197,16 +197,28 @@
   const blurOverlay = document.getElementById('blur-overlay');
 
   if (isMobile) {
-    // ── MOBILE: lightweight IntersectionObserver word-fade ──
-    // No per-frame DOM writes, no canvas blur, no video filter — pure CSS transitions
+    // ── MOBILE: Lightweight scroll-scrubbed paragraph animation ──
+    // Opacity/transform links to scroll progress for smooth scrolling in BOTH directions (down/up)
     effectParagraphs.forEach((para) => {
-      // Split into word spans only (not chars) for minimal DOM size
       const text = para.textContent.trim();
-      para.textContent = '';
-      para.style.opacity = '0';
+      para.textContent = text;
+      
+      para.style.opacity = '0.15';
       para.style.transform = 'translateY(20px)';
-      para.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-      para.textContent = text; // keep as plain text — no char spans needed
+      para.style.willChange = 'opacity, transform';
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: para,
+          start: 'top 95%',  // starts when top of paragraph enters bottom of screen (95%)
+          end: 'top 15%',    // ends when top of paragraph leaves top of screen (15%)
+          scrub: true
+        }
+      });
+
+      tl.to(para, { opacity: 1, y: 0, duration: 0.4, ease: 'power1.out' })
+        .to(para, { opacity: 1, y: 0, duration: 0.2 })
+        .to(para, { opacity: 0.15, y: -20, duration: 0.4, ease: 'power1.in' });
     });
 
     // Show text container immediately on mobile (no fixed positioning complexity)
@@ -239,18 +251,6 @@
       }, { threshold: 0.1 });
       overlayObserver.observe(textSection);
     }
-
-    // Fade each paragraph in as it scrolls into view
-    const paraObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.opacity = '1';
-          entry.target.style.transform = 'translateY(0)';
-        }
-      });
-    }, { threshold: 0.3, rootMargin: '0px 0px -10% 0px' });
-
-    effectParagraphs.forEach(para => paraObserver.observe(para));
 
   } else {
     // ── DESKTOP: full per-character GSAP scrub animation ──
