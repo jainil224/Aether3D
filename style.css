@@ -1167,17 +1167,73 @@ nav .social svg {
   /* ---- Base: smooth native momentum scroll ---- */
   html {
     scroll-behavior: auto; /* let GSAP own scroll — CSS smooth conflicts with ScrollTrigger */
-    overscroll-behavior-y: none; /* stop bounce at page edges that breaks fixed positions */
-    -webkit-text-size-adjust: 100%; /* stop iOS zooming text on rotation */
+    overscroll-behavior-y: none;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
     overflow-x: hidden;
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch; /* momentum scroll on iOS */
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: none;
-    touch-action: pan-y; /* native vertical pan, GSAP handles everything else */
+    touch-action: pan-y;
   }
+
+  /* ---- Mobile background: animated gradient (video disabled on mobile) ---- */
+  #scroll-video-container {
+    background: linear-gradient(135deg, #010108 0%, #020318 35%, #010214 65%, #000208 100%);
+  }
+
+  /* Subtle slow-moving gradient orbs as background on mobile (CSS-only, GPU-composited) */
+  #scroll-video-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 25% 35%, rgba(0, 114, 255, 0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 35% at 75% 65%, rgba(0, 240, 255, 0.08) 0%, transparent 70%);
+    animation: bgPulse 8s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+
+  @keyframes bgPulse {
+    0%   { opacity: 0.6; }
+    100% { opacity: 1; }
+  }
+
+  /* ---- Text effect section: normal-flow on mobile (not height:280vh fixed animation) ---- */
+  #text-effect-section {
+    height: auto;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 0;
+    position: relative;
+  }
+
+  /* Text effect container: normal document flow on mobile */
+  #effect-text-container {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 1.5rem !important;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .text-reveal-effect {
+    font-size: clamp(1.1rem, 4.5vw, 1.5rem);
+    line-height: 1.5;
+    color: #ffffff;
+  }
+
 
   /* ---- Capsule Nav ---- */
   .capsule-nav {

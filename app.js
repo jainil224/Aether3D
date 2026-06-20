@@ -2,14 +2,20 @@
   // Global Controller for the Perspective Carousel
   let carouselController = null;
 
-  // Global Mouse tracking for particles
+  // ── Detect mobile FIRST so every path below can branch ──
+  // Uses both UA string and screen width for maximum compatibility
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth <= 768;
+
+  // Global Mouse tracking for particles (desktop only)
   let mouseX = window.innerWidth / 2;
   let mouseY = window.innerHeight / 2;
 
-  window.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-  });
+  if (!isMobile) {
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+  }
 
   // ===================== HLS VIDEO BACKGROUND =====================
   const VIDEO_URL = 'https://res.cloudinary.com/dsn0ks2hl/video/upload/upscaled-video_3_dcpffg.m3u8';
@@ -39,266 +45,299 @@
     }
   }
 
-  // Backup load timeout
-  setTimeout(hideOverlay, 7000);
-
-  // Setup HLS Config
-  const hlsConfig = {
-    maxBufferLength: 120,
-    maxMaxBufferLength: 600,
-    maxBufferSize: 200 * 1024 * 1024,
-    startPosition: 0,
-    capLevelToPlayerSize: false,
-    startLevel: -1,
-    autoStartLoad: true
-  };
-
-  if (Hls.isSupported()) {
-    const hls = new Hls(hlsConfig);
-    hls.loadSource(VIDEO_URL);
-    hls.attachMedia(videoEl);
-
-    hls.on(Hls.Events.MANIFEST_PARSED, function() {
-      const maxLevel = hls.levels.length - 1;
-      hls.currentLevel = maxLevel;
-      hls.startLevel = maxLevel;
-    });
-
-    hls.on(Hls.Events.FRAG_BUFFERED, function() {
-      if (videoEl.duration) {
-        duration = videoEl.duration;
-        let bufferedEnd = 0;
-        for (let i = 0; i < videoEl.buffered.length; i++) {
-          bufferedEnd = Math.max(bufferedEnd, videoEl.buffered.end(i));
-        }
-        const progress = (bufferedEnd / duration) * 100;
-        updateLoadingProgress(progress);
-      }
-    });
-  } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
-    // Safari Native HLS Support
-    videoEl.src = VIDEO_URL;
-    videoEl.addEventListener('loadedmetadata', () => {
-      duration = videoEl.duration;
-    });
-    videoEl.addEventListener('progress', () => {
-      if (videoEl.duration) {
-        duration = videoEl.duration;
-        let bufferedEnd = 0;
-        for (let i = 0; i < videoEl.buffered.length; i++) {
-          bufferedEnd = Math.max(bufferedEnd, videoEl.buffered.end(i));
-        }
-        const progress = (bufferedEnd / duration) * 100;
-        updateLoadingProgress(progress);
-      }
-    });
+  // On mobile: skip video entirely — show instantly, use CSS background
+  if (isMobile) {
+    if (videoEl) {
+      videoEl.style.display = 'none'; // don't render the video element at all
+    }
+    // Show page immediately without waiting for video buffer
+    setTimeout(hideOverlay, 800);
   } else {
-    // Fallback to Cloudinary MP4
-    videoEl.src = 'https://res.cloudinary.com/dsn0ks2hl/video/upload/upscaled-video_3_dcpffg.mp4';
-    videoEl.addEventListener('loadedmetadata', () => {
-      duration = videoEl.duration;
-    });
-    videoEl.addEventListener('progress', () => {
-      if (videoEl.duration) {
-        duration = videoEl.duration;
-        let bufferedEnd = 0;
-        for (let i = 0; i < videoEl.buffered.length; i++) {
-          bufferedEnd = Math.max(bufferedEnd, videoEl.buffered.end(i));
-        }
-        const progress = (bufferedEnd / duration) * 100;
-        updateLoadingProgress(progress);
-      }
-    });
-  }
+    // ── DESKTOP ONLY: HLS video loading ──
+    setTimeout(hideOverlay, 7000); // Backup load timeout
 
-  videoEl.addEventListener('canplaythrough', () => {
-    updateLoadingProgress(100);
-    hideOverlay();
-  });
+    const hlsConfig = {
+      maxBufferLength: 120,
+      maxMaxBufferLength: 600,
+      maxBufferSize: 200 * 1024 * 1024,
+      startPosition: 0,
+      capLevelToPlayerSize: false,
+      startLevel: -1,
+      autoStartLoad: true
+    };
+
+    if (Hls.isSupported()) {
+      const hls = new Hls(hlsConfig);
+      hls.loadSource(VIDEO_URL);
+      hls.attachMedia(videoEl);
+
+      hls.on(Hls.Events.MANIFEST_PARSED, function() {
+        const maxLevel = hls.levels.length - 1;
+        hls.currentLevel = maxLevel;
+        hls.startLevel = maxLevel;
+      });
+
+      hls.on(Hls.Events.FRAG_BUFFERED, function() {
+        if (videoEl.duration) {
+          duration = videoEl.duration;
+          let bufferedEnd = 0;
+          for (let i = 0; i < videoEl.buffered.length; i++) {
+            bufferedEnd = Math.max(bufferedEnd, videoEl.buffered.end(i));
+          }
+          const progress = (bufferedEnd / duration) * 100;
+          updateLoadingProgress(progress);
+        }
+      });
+    } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
+      // Safari Native HLS Support
+      videoEl.src = VIDEO_URL;
+      videoEl.addEventListener('loadedmetadata', () => {
+        duration = videoEl.duration;
+      });
+      videoEl.addEventListener('progress', () => {
+        if (videoEl.duration) {
+          duration = videoEl.duration;
+          let bufferedEnd = 0;
+          for (let i = 0; i < videoEl.buffered.length; i++) {
+            bufferedEnd = Math.max(bufferedEnd, videoEl.buffered.end(i));
+          }
+          const progress = (bufferedEnd / duration) * 100;
+          updateLoadingProgress(progress);
+        }
+      });
+    } else {
+      // Fallback to Cloudinary MP4
+      videoEl.src = 'https://res.cloudinary.com/dsn0ks2hl/video/upload/upscaled-video_3_dcpffg.mp4';
+      videoEl.addEventListener('loadedmetadata', () => {
+        duration = videoEl.duration;
+      });
+      videoEl.addEventListener('progress', () => {
+        if (videoEl.duration) {
+          duration = videoEl.duration;
+          let bufferedEnd = 0;
+          for (let i = 0; i < videoEl.buffered.length; i++) {
+            bufferedEnd = Math.max(bufferedEnd, videoEl.buffered.end(i));
+          }
+          const progress = (bufferedEnd / duration) * 100;
+          updateLoadingProgress(progress);
+        }
+      });
+    }
+
+    videoEl.addEventListener('canplaythrough', () => {
+      updateLoadingProgress(100);
+      hideOverlay();
+    });
+  } // end desktop-only video block
 
   // ===================== GSAP SCROLLTRIGGER =====================
   gsap.registerPlugin(ScrollTrigger);
 
-  // Detect mobile once — used throughout to adapt behaviour
-  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth <= 768;
-
-  // On mobile: normalizeScroll makes GSAP own the scroll so touch animations
-  // are perfectly smooth and don't stutter against the browser's inertia scroll.
-  // ignoreMobileResize prevents ScrollTrigger from recalculating on every
-  // address-bar hide/show (which causes jumpy scroll positions on iOS).
+  // On mobile: let GSAP own the scroll container for smooth scrub animations
   if (isMobile) {
     ScrollTrigger.normalizeScroll(true);
     ScrollTrigger.config({ ignoreMobileResize: true });
   }
 
-  // Scroll-to-seek video logic (scrubs video from top of page to bottom)
-  let currentTarget = 0;
-  let seekPending = false;
+  // Scroll-to-seek video — DESKTOP ONLY (video seeking is extremely expensive on mobile)
+  if (!isMobile) {
+    let currentTarget = 0;
+    let seekPending = false;
 
-  function doSeek(time) {
-    currentTarget = time;
-    if (!videoEl.seeking) {
-      videoEl.currentTime = time;
-    } else {
-      seekPending = true;
-    }
-  }
-
-  videoEl.addEventListener('seeked', () => {
-    if (seekPending) {
-      seekPending = false;
-      doSeek(currentTarget);
-    }
-  });
-
-  ScrollTrigger.create({
-    trigger: document.documentElement,
-    start: 'top top',
-    end: 'bottom bottom',
-    scrub: true,
-    onUpdate: (self) => {
-      if (videoEl.duration && isFinite(videoEl.duration)) {
-        duration = videoEl.duration;
-        // Calculate targetTime based on document height as requested
-        const targetTime = self.progress * duration;
-        
-        // Scale and clamp the seek target so that the video completes its 3-second seek animation
-        // during the first 30% of the page scroll (the Hero section), remaining at 3.0s for the text zone.
-        const maxSeek = Math.min(3.0, duration - 0.1);
-        const progressScale = Math.min(1, self.progress / 0.3);
-        const clampedTime = progressScale * maxSeek;
-        
-        doSeek(Math.max(0, clampedTime));
+    function doSeek(time) {
+      currentTarget = time;
+      if (!videoEl.seeking) {
+        videoEl.currentTime = time;
+      } else {
+        seekPending = true;
       }
     }
-  });
 
-
-
-  // Split reveal text into individual characters for each paragraph in the scroll blur & reveal section
-  const effectParagraphs = document.querySelectorAll('.text-reveal-effect');
-  effectParagraphs.forEach((para) => {
-    const text = para.textContent.trim();
-    para.textContent = '';
-    const words = text.split(' ');
-    words.forEach((word, wordIdx) => {
-      const wordSpan = document.createElement('span');
-      wordSpan.className = 'word';
-      wordSpan.style.display = 'inline-block';
-      wordSpan.style.whiteSpace = 'nowrap';
-      for (let char of word) {
-        const charSpan = document.createElement('span');
-        charSpan.textContent = char;
-        charSpan.className = 'char-span';
-        wordSpan.appendChild(charSpan);
-      }
-      para.appendChild(wordSpan);
-      if (wordIdx < words.length - 1) {
-        const spaceSpan = document.createElement('span');
-        spaceSpan.textContent = ' ';
-        spaceSpan.style.marginRight = '0.25em';
-        para.appendChild(spaceSpan);
+    videoEl.addEventListener('seeked', () => {
+      if (seekPending) {
+        seekPending = false;
+        doSeek(currentTarget);
       }
     });
-  });
 
+    ScrollTrigger.create({
+      trigger: document.documentElement,
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: true,
+      onUpdate: (self) => {
+        if (videoEl.duration && isFinite(videoEl.duration)) {
+          duration = videoEl.duration;
+          const maxSeek = Math.min(3.0, duration - 0.1);
+          const progressScale = Math.min(1, self.progress / 0.3);
+          const clampedTime = progressScale * maxSeek;
+          doSeek(Math.max(0, clampedTime));
+        }
+      }
+    });
+  }
+
+  // ── Text effect: mobile vs desktop paths ──
+  const effectParagraphs = document.querySelectorAll('.text-reveal-effect');
   const effectTextContainer = document.getElementById('effect-text-container');
   const cardStackSticky = document.getElementById('card-stack-sticky');
-
-  // ScrollTrigger to blur the background video and reveal paragraph characters in staggered fashion
   const blurOverlay = document.getElementById('blur-overlay');
 
-  ScrollTrigger.create({
-    trigger: '#text-effect-section',
-    start: 'top top',
-    end: 'bottom top',
-    scrub: true,
-    onUpdate: (self) => {
-      // 1. Animate video blur — ramps up fast with power-2 easing, max 40px
-      const maxBlur = 40;
-      const easedProgress = Math.pow(self.progress, 0.4); // fast ramp: 0.4 exponent = blurs quickly early on
-      const blurValue = easedProgress * maxBlur;
-      if (videoEl) {
-        videoEl.style.filter = `blur(${blurValue}px)`;
-      }
+  if (isMobile) {
+    // ── MOBILE: lightweight IntersectionObserver word-fade ──
+    // No per-frame DOM writes, no canvas blur, no video filter — pure CSS transitions
+    effectParagraphs.forEach((para) => {
+      // Split into word spans only (not chars) for minimal DOM size
+      const text = para.textContent.trim();
+      para.textContent = '';
+      para.style.opacity = '0';
+      para.style.transform = 'translateY(20px)';
+      para.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+      para.textContent = text; // keep as plain text — no char spans needed
+    });
 
-      // 2. Dark overlay — fades in to 0.82 opacity so video is fully obscured
-      //    Fades out again at the end (progress > 0.88)
-      if (blurOverlay) {
-        let overlayAlpha = 0;
-        if (self.progress <= 0.88) {
-          overlayAlpha = Math.min(0.82, easedProgress * 0.95);
-        } else {
-          // fade overlay out as text section ends
-          overlayAlpha = 0.82 * ((1 - self.progress) / 0.12);
-        }
-        blurOverlay.style.background = `rgba(2, 4, 10, ${overlayAlpha})`;
-      }
+    // Show text container immediately on mobile (no fixed positioning complexity)
+    if (effectTextContainer) {
+      effectTextContainer.style.opacity = '1';
+      effectTextContainer.style.visibility = 'visible';
+      effectTextContainer.style.position = 'relative';
+      effectTextContainer.style.top = 'auto';
+      effectTextContainer.style.left = 'auto';
+      effectTextContainer.style.transform = 'none';
+      effectTextContainer.style.width = '100%';
+      effectTextContainer.style.maxWidth = '100%';
+      effectTextContainer.style.padding = '1.5rem';
+      effectTextContainer.style.zIndex = '10';
+    }
 
-      // 3. Character-by-character staggered reveal for each paragraph in order
-      const totalParas = effectParagraphs.length;
-      effectParagraphs.forEach((para, paraIdx) => {
-        // Distribute paragraph reveal times evenly across progress 0.1 to 0.95
-        const startInterval = 0.1 + (paraIdx / totalParas) * 0.8;
-        const endInterval = 0.1 + ((paraIdx + 1) / totalParas) * 0.8;
-
-        const chars = para.querySelectorAll('.char-span');
-        const count = chars.length;
-
-        chars.forEach((charSpan, index) => {
-          // Stagger reveal of characters inside this paragraph's interval
-          const startProgress = startInterval + (index / count) * (endInterval - startInterval) * 0.7;
-          const endProgress = startProgress + (endInterval - startInterval) * 0.25;
-
-          if (self.progress > endProgress) {
-            charSpan.classList.add('revealed');
-            charSpan.style.opacity = '1';
-            charSpan.style.transform = 'translateY(0)';
-            charSpan.style.filter = 'blur(0px)';
-          } else if (self.progress < startProgress) {
-            charSpan.classList.remove('revealed');
-            charSpan.style.opacity = '0.15';
-            charSpan.style.transform = 'translateY(12px)';
-            charSpan.style.filter = 'blur(8px)';
+    // Dark overlay for text section on mobile — use IntersectionObserver (no scroll event)
+    const textSection = document.getElementById('text-effect-section');
+    if (textSection && blurOverlay) {
+      const overlayObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            blurOverlay.style.background = 'rgba(2, 4, 10, 0.88)';
           } else {
-            const t = (self.progress - startProgress) / (endProgress - startProgress);
-            charSpan.classList.add('revealed');
-            charSpan.style.opacity = 0.15 + t * 0.85;
-            charSpan.style.transform = `translateY(${12 * (1 - t)}px)`;
-            charSpan.style.filter = `blur(${8 * (1 - t)}px)`;
+            blurOverlay.style.background = 'rgba(2, 4, 10, 0)';
           }
         });
-      });
-
-      // 4. Smoothly fade the text container in at the start and out at the end
-      if (effectTextContainer) {
-        let opacity = 1;
-        if (self.progress < 0.1) {
-          opacity = self.progress / 0.1;
-        } else if (self.progress > 0.85) {
-          opacity = (1 - self.progress) / 0.15;
-        }
-        effectTextContainer.style.opacity = opacity;
-      }
-    },
-    onLeave: () => {
-      // Keep blur at max as we scroll into the card section below
-      if (videoEl) videoEl.style.filter = 'blur(40px)';
-      if (blurOverlay) blurOverlay.style.background = 'rgba(2, 4, 10, 0.78)';
-    },
-    onLeaveBack: () => {
-      // Reset blur and overlay only when scrolling back up to the hero
-      if (videoEl) videoEl.style.filter = 'blur(0px)';
-      if (blurOverlay) blurOverlay.style.background = 'rgba(2, 4, 10, 0)';
+      }, { threshold: 0.1 });
+      overlayObserver.observe(textSection);
     }
-  });
 
-  ScrollTrigger.create({
-    trigger: '#text-effect-section',
-    start: 'top top',
-    end: 'bottom top',
-    toggleClass: { targets: '#effect-text-container', className: 'active' }
-  });
+    // Fade each paragraph in as it scrolls into view
+    const paraObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.3, rootMargin: '0px 0px -10% 0px' });
+
+    effectParagraphs.forEach(para => paraObserver.observe(para));
+
+  } else {
+    // ── DESKTOP: full per-character GSAP scrub animation ──
+    effectParagraphs.forEach((para) => {
+      const text = para.textContent.trim();
+      para.textContent = '';
+      const words = text.split(' ');
+      words.forEach((word, wordIdx) => {
+        const wordSpan = document.createElement('span');
+        wordSpan.className = 'word';
+        wordSpan.style.display = 'inline-block';
+        wordSpan.style.whiteSpace = 'nowrap';
+        for (let char of word) {
+          const charSpan = document.createElement('span');
+          charSpan.textContent = char;
+          charSpan.className = 'char-span';
+          wordSpan.appendChild(charSpan);
+        }
+        para.appendChild(wordSpan);
+        if (wordIdx < words.length - 1) {
+          const spaceSpan = document.createElement('span');
+          spaceSpan.textContent = ' ';
+          spaceSpan.style.marginRight = '0.25em';
+          para.appendChild(spaceSpan);
+        }
+      });
+    });
+
+    ScrollTrigger.create({
+      trigger: '#text-effect-section',
+      start: 'top top',
+      end: 'bottom top',
+      scrub: true,
+      onUpdate: (self) => {
+        const maxBlur = 40;
+        const easedProgress = Math.pow(self.progress, 0.4);
+        const blurValue = easedProgress * maxBlur;
+        if (videoEl) videoEl.style.filter = `blur(${blurValue}px)`;
+
+        if (blurOverlay) {
+          let overlayAlpha = 0;
+          if (self.progress <= 0.88) {
+            overlayAlpha = Math.min(0.82, easedProgress * 0.95);
+          } else {
+            overlayAlpha = 0.82 * ((1 - self.progress) / 0.12);
+          }
+          blurOverlay.style.background = `rgba(2, 4, 10, ${overlayAlpha})`;
+        }
+
+        const totalParas = effectParagraphs.length;
+        effectParagraphs.forEach((para, paraIdx) => {
+          const startInterval = 0.1 + (paraIdx / totalParas) * 0.8;
+          const endInterval = 0.1 + ((paraIdx + 1) / totalParas) * 0.8;
+          const chars = para.querySelectorAll('.char-span');
+          const count = chars.length;
+          chars.forEach((charSpan, index) => {
+            const startProgress = startInterval + (index / count) * (endInterval - startInterval) * 0.7;
+            const endProgress = startProgress + (endInterval - startInterval) * 0.25;
+            if (self.progress > endProgress) {
+              charSpan.classList.add('revealed');
+              charSpan.style.opacity = '1';
+              charSpan.style.transform = 'translateY(0)';
+              charSpan.style.filter = 'blur(0px)';
+            } else if (self.progress < startProgress) {
+              charSpan.classList.remove('revealed');
+              charSpan.style.opacity = '0.15';
+              charSpan.style.transform = 'translateY(12px)';
+              charSpan.style.filter = 'blur(8px)';
+            } else {
+              const t = (self.progress - startProgress) / (endProgress - startProgress);
+              charSpan.classList.add('revealed');
+              charSpan.style.opacity = 0.15 + t * 0.85;
+              charSpan.style.transform = `translateY(${12 * (1 - t)}px)`;
+              charSpan.style.filter = `blur(${8 * (1 - t)}px)`;
+            }
+          });
+        });
+
+        if (effectTextContainer) {
+          let opacity = 1;
+          if (self.progress < 0.1) opacity = self.progress / 0.1;
+          else if (self.progress > 0.85) opacity = (1 - self.progress) / 0.15;
+          effectTextContainer.style.opacity = opacity;
+        }
+      },
+      onLeave: () => {
+        if (videoEl) videoEl.style.filter = 'blur(40px)';
+        if (blurOverlay) blurOverlay.style.background = 'rgba(2, 4, 10, 0.78)';
+      },
+      onLeaveBack: () => {
+        if (videoEl) videoEl.style.filter = 'blur(0px)';
+        if (blurOverlay) blurOverlay.style.background = 'rgba(2, 4, 10, 0)';
+      }
+    });
+
+    ScrollTrigger.create({
+      trigger: '#text-effect-section',
+      start: 'top top',
+      end: 'bottom top',
+      toggleClass: { targets: '#effect-text-container', className: 'active' }
+    });
+  }
 
   // ---- Smooth card stack entrance: triggered at end of transition section ----
   let cardAnimPlayed = false;
@@ -451,59 +490,64 @@
 
   // ===================== PARTICLES =====================
   const pCanvas = document.getElementById('particles-canvas');
-  const pCtx = pCanvas.getContext('2d');
-  let particles = [];
 
-  function resizeParticles() {
-    pCanvas.width = window.innerWidth;
-    pCanvas.height = window.innerHeight;
-    createParticles();
-  }
+  if (isMobile) {
+    // Kill particles entirely on mobile — no rAF loop, no canvas context, no GPU work
+    if (pCanvas) pCanvas.style.display = 'none';
+  } else {
+    // DESKTOP ONLY: full particle animation
+    const pCtx = pCanvas.getContext('2d');
+    let particles = [];
 
-  function createParticles() {
-    particles = [];
-    // Reduce particle count on mobile to keep scroll smooth
-    const density = isMobile ? 60000 : 20000;
-    const count = Math.floor((pCanvas.width * pCanvas.height) / density);
-    for (let i = 0; i < count; i++) {
-      particles.push({
-        x: Math.random() * pCanvas.width,
-        y: Math.random() * pCanvas.height,
-        vx: (Math.random() - 0.5) * 0.12,
-        vy: -(Math.random() * 0.18 + 0.08),
-        size: Math.random() * 1.2 + 0.4,
-        opacity: Math.random() * 0.45 + 0.1,
-        seed: Math.random() * 100
-      });
+    function resizeParticles() {
+      pCanvas.width = window.innerWidth;
+      pCanvas.height = window.innerHeight;
+      createParticles();
     }
-  }
 
-  function animateParticles() {
-    pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
-    // On mobile: skip mouse tracking (no mouse) and reduce sine wave cost
-    const dxMouse = isMobile ? 0 : (mouseX - window.innerWidth / 2) * 0.02;
-    const dyMouse = isMobile ? 0 : (mouseY - window.innerHeight / 2) * 0.02;
-
-    for (const p of particles) {
-      p.x += p.vx + (isMobile ? 0 : Math.sin(Date.now() * 0.001 + p.seed) * 0.04) + (dxMouse * p.size * 0.08);
-      p.y += p.vy + (dyMouse * p.size * 0.08);
-
-      if (p.x < 0) p.x = pCanvas.width;
-      if (p.x > pCanvas.width) p.x = 0;
-      if (p.y < 0) p.y = pCanvas.height;
-      if (p.y > pCanvas.height) p.y = 0;
-
-      pCtx.beginPath();
-      pCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      pCtx.fillStyle = `rgba(0,240,255,${p.opacity})`;
-      pCtx.fill();
+    function createParticles() {
+      particles = [];
+      const count = Math.floor((pCanvas.width * pCanvas.height) / 20000);
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * pCanvas.width,
+          y: Math.random() * pCanvas.height,
+          vx: (Math.random() - 0.5) * 0.12,
+          vy: -(Math.random() * 0.18 + 0.08),
+          size: Math.random() * 1.2 + 0.4,
+          opacity: Math.random() * 0.45 + 0.1,
+          seed: Math.random() * 100
+        });
+      }
     }
-    requestAnimationFrame(animateParticles);
+
+    function animateParticles() {
+      pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+      const dxMouse = (mouseX - window.innerWidth / 2) * 0.02;
+      const dyMouse = (mouseY - window.innerHeight / 2) * 0.02;
+
+      for (const p of particles) {
+        p.x += p.vx + Math.sin(Date.now() * 0.001 + p.seed) * 0.04 + (dxMouse * p.size * 0.08);
+        p.y += p.vy + (dyMouse * p.size * 0.08);
+
+        if (p.x < 0) p.x = pCanvas.width;
+        if (p.x > pCanvas.width) p.x = 0;
+        if (p.y < 0) p.y = pCanvas.height;
+        if (p.y > pCanvas.height) p.y = 0;
+
+        pCtx.beginPath();
+        pCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        pCtx.fillStyle = `rgba(0,240,255,${p.opacity})`;
+        pCtx.fill();
+      }
+      requestAnimationFrame(animateParticles);
+    }
+
+    resizeParticles();
+    window.addEventListener('resize', resizeParticles);
+    animateParticles();
   }
 
-  resizeParticles();
-  window.addEventListener('resize', resizeParticles);
-  animateParticles();
 
   // ===================== HERO FADE =====================
   function updateHeroOpacity() {
